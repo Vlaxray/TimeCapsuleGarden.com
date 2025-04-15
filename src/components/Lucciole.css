@@ -1,0 +1,17 @@
+.firefly {
+    position: absolute;
+    width: 4px;
+    height: 4px;
+    background: #fffacd;
+    border-radius: 50%;
+    opacity: 0;
+    animation: twinkle 6s infinite ease-in-out;
+    pointer-events: none;
+    z-index: -1;
+  }
+  
+  @keyframes twinkle {
+    0%, 100% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 1; transform: scale(1.8); }
+  }
+  
