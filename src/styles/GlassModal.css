@@ -1,0 +1,102 @@
+.modal-backdrop.show {
+    background: rgba(0, 31, 20, 0.7) !important;
+    backdrop-filter: blur(5px) !important;
+    opacity: 1 !important;
+  }
+/* Effetto vetro principale */
+.glass-modal {
+    border: none !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+    animation: fadeIn 0.9s ease-out;
+  }
+  @keyframes fadeIn {
+    from { 
+      opacity: 0; 
+      transform: translateY(20px); 
+    }
+    to { 
+      opacity: 1; 
+      transform: translateY(0); 
+    }
+  }
+    
+   .glass-content {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15) !important;
+  }
+  
+  /* Header */
+  .glass-header {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.18) !important;
+    color: white !important;
+  }
+  
+  /* Body */
+  .glass-body {
+    color: white !important;
+  }
+  
+  /* Input fields */
+  .glass-input {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    backdrop-filter: blur(5px) !important;
+  }
+  
+  .glass-input::placeholder {
+    color: rgba(255, 255, 255, 0.6) !important;
+  }
+  
+  .glass-input:focus {
+    background: rgba(255, 255, 255, 0.2) !important;
+    box-shadow: 0 0 0 0.25rem rgba(58, 255, 133, 0.25) !important;
+    border-color: #3aff85 !important;
+  }
+  
+  /* Footer */
+  .glass-footer {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.18) !important;
+  }
+  
+  /* Pulsanti personalizzati */
+  .glass-btn {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: white !important;
+    transition: all 0.3s ease !important;
+  }
+  
+  .glass-btn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+  }
+  
+  .glass-btn-primary {
+    background: rgba(58, 255, 133, 0.7) !important;
+    border: none !important;
+    color: #001f14 !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease !important;
+  }
+  
+  .glass-btn-primary:hover {
+    background: rgba(58, 255, 133, 0.9) !important;
+    transform: translateY(-1px);
+  }
+
+  @media (max-width: 576px) {
+    .glass-modal {
+      margin: 20px !important;
+      width: auto !important;
+    }
+    
+    .modal-backdrop.show {
+      backdrop-filter: blur(1px) !important;
+    }
+  }

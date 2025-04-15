@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback, useState  } from 'react';
+import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { loadFull } from 'tsparticles';
 import { tsParticles } from 'tsparticles-engine';
 import { Button, Modal, Form, Alert } from 'react-bootstrap';
@@ -10,6 +10,8 @@ import Dashboard from './components/Dashboard';
 import './styles/App.css';
 import Particles from 'react-tsparticles';
 import type { Engine } from 'tsparticles-engine';
+import './styles/GlassModal.css'; // CSS per l'effetto vetro
+import * as THREE from 'three'; // Per la generazione della noise map
 
 
 
@@ -19,6 +21,13 @@ const App = () => {
     await loadFull(engine);
   }, []);
 
+  // Stato per gestire le particelle visibili
+  const [visibleParticles, setVisibleParticles] = useState(true);
+  const particlesRef = useRef<any>(null);
+
+/* inserire granulosità noisemap */
+
+  // Configurazione particelle con opzioni di decay
   const particlesOptions = {
     fullScreen: {
       enable: false,
@@ -26,7 +35,7 @@ const App = () => {
     },
     particles: {
       number: {
-        value: 80,
+        value: 10,
         density: {
           enable: true,
           value_area: 800
@@ -64,7 +73,13 @@ const App = () => {
         direction: "none" as const,
         random: true,
         straight: false,
-        outModes: { default: 'out' as const },
+        outModes: {
+          default: "out" as const,
+          top: "bounce" as const,
+          bottom: "bounce" as const,
+          left: "bounce" as const,
+          right: "bounce" as const,
+        },
         attract: {
           enable: true,
           rotateX: 600,
@@ -73,7 +88,7 @@ const App = () => {
       },
       links: {
         enable: true,
-        distance: 150,
+        distance: 200,
         color: "#3aff85",
         opacity: 0.4,
         width: 1
@@ -87,23 +102,40 @@ const App = () => {
         },
         onclick: {
           enable: true,
-          mode: "push"
+          mode: "push" // Modificato da "push" a "remove"
         },
         resize: true
       },
       modes: {
         grab: {
-          distance: 140,
+          distance: 120,
           line_linked: {
             opacity: 1
           }
         },
         push: {
-          particles_nb: 4
+          quantity: 1, // Numero di particelle da rimuovere al click
+          speed: 20// Velocità di rimozione
         }
       }
     },
     retina_detect: true
+  };
+
+  // Funzione per resettare le particelle dopo un tempo
+  const resetParticles = () => {
+    setVisibleParticles(false);
+    setTimeout(() => {
+      setVisibleParticles(true);
+    }, 3000); // Resetta dopo 3 secondi
+  };
+
+  // Handler per il click che attiva il decay
+  const handleCanvasClick = () => {
+    if (particlesRef.current) {
+      particlesRef.current.refresh();
+      resetParticles();
+    }
   };
 
   // Stati per autenticazione
@@ -221,94 +253,112 @@ const App = () => {
       </div>
 
       {/* Modali... */}
-      <Modal show={showLogin} onHide={() => setShowLogin(false)}>
-      <Modal.Header closeButton>
-            <Modal.Title>Accedi al tuo account</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group className="mb-3">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  placeholder="Inserisci la tua email"
-                  value={loginData.email}
-                  onChange={(e) => setLoginData({...loginData, email: e.target.value})}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Inserisci la tua password"
-                  value={loginData.password}
-                  onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                />
-              </Form.Group>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowLogin(false)}>
-              Chiudi
-            </Button>
-            <Button className="signup-btn" onClick={handleLogin}>
-              Accedi
-            </Button>
-          </Modal.Footer>
+      <Modal 
+      show={showLogin} 
+      onHide={() => setShowLogin(false)} 
+      centered 
+      dialogClassName="glass-modal" 
+      contentClassName="glass-content"
+      >
+      <Modal.Header className="glass-header">
+          <Modal.Title>Accedi al tuo account</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="glass-body">
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control 
+                type="email" 
+                placeholder="tua@email.com" 
+                className="glass-input"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Password</Form.Label>
+              <Form.Control 
+                type="password" 
+                placeholder="Password" 
+                className="glass-input"
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer className="glass-footer">
+          <Button 
+            variant="secondary" 
+            onClick={() => setShowLogin(false)}
+            className="glass-btn"
+          >
+            Chiudi
+          </Button>
+          <Button 
+            variant="primary" 
+            className="glass-btn-primary"
+          >
+            Accedi
+          </Button>
+        </Modal.Footer>
       </Modal>
 
-      <Modal show={showSignup} onHide={() => setShowSignup(false)}>
-      <Modal.Header closeButton>
-            <Modal.Title>Crea un nuovo account</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <Form>
-              <Form.Group className="mb-3">
-                <Form.Label>Nome</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Inserisci il tuo nome"
-                  value={signupData.name}
-                  onChange={(e) => setSignupData({...signupData, name: e.target.value})}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  placeholder="Inserisci la tua email"
-                  value={signupData.email}
-                  onChange={(e) => setSignupData({...signupData, email: e.target.value})}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Crea una password"
-                  value={signupData.password}
-                  onChange={(e) => setSignupData({...signupData, password: e.target.value})}
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Conferma Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Conferma la password"
-                  value={signupData.confirmPassword}
-                  onChange={(e) => setSignupData({...signupData, confirmPassword: e.target.value})}
-                />
-              </Form.Group>
-            </Form>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={() => setShowSignup(false)}>
-              Chiudi
-            </Button>
-            <Button className="signup-btn" onClick={handleSignup}>
-              Registrati
-            </Button>
-          </Modal.Footer>
+      <Modal show={showSignup}
+        onHide={() => setShowSignup(false)}
+        centered
+        dialogClassName="glass-modal"
+        contentClassName="glass-content">
+      <Modal.Header className="glass-header">
+          <Modal.Title>Crea un account</Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="glass-body">
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Nome</Form.Label>
+              <Form.Control 
+                type="text" 
+                placeholder="Il tuo nome" 
+                className="glass-input"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Email</Form.Label>
+              <Form.Control 
+                type="email" 
+                placeholder="tua@email.com" 
+                className="glass-input"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Password</Form.Label>
+              <Form.Control 
+                type="password" 
+                placeholder="Password" 
+                className="glass-input"
+              />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Conferma Password</Form.Label>
+              <Form.Control 
+                type="password" 
+                placeholder="Conferma Password" 
+                className="glass-input"
+              />
+            </Form.Group>
+          </Form>
+        </Modal.Body>
+        <Modal.Footer className="glass-footer">
+          <Button 
+            variant="secondary" 
+            onClick={() => setShowSignup(false)}
+            className="glass-btn"
+          >
+            Chiudi
+          </Button>
+          <Button 
+            variant="primary" 
+            className="glass-btn-primary"
+          >
+            Registrati
+          </Button>
+        </Modal.Footer>
       </Modal>
       <div className="text-center p-5 text-light">
             <h1 className="glow display-4 fw-bold">

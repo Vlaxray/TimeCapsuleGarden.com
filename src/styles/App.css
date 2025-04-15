@@ -5,6 +5,16 @@
     background-color: #001f14;
     color: white;
   }
+
+  .particles-canvas {
+    transition: opacity 1.5s ease-out;
+  }
+  
+  /* Effetto di scomparsa */
+.particles-fade-out {
+    opacity: 0;
+  }
+
   
   /* Particles background */
   .particles-background {
