@@ -169,7 +169,7 @@ const App = () => {
       });
 
       const data = await response.json();
-
+ 
       if (data.success) {
         setShowSignup(false);
         setSuccess('Registrazione completata! Ora puoi effettuare il login');
