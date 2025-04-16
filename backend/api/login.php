@@ -59,15 +59,3 @@ if (!empty($errors)) {
 }
 ?>
 
-<form method="post">
-    <label>Email:</label>
-    <input type="email" name="email" required>
-
-    <label>Password:</label>
-    <input type="password" name="password" required>
-
-    <input type="submit" value="Accedi">
-</form>
-
-</body>
-</html>

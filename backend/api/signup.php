@@ -1,5 +1,8 @@
 <?php
 require_once '/Ampps/www/mystuff/TimeCapsuleGarden/vite-timecapsule/backend/config/db.php';
+header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *");
+
 
 $errors = [];
 
@@ -66,53 +69,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Registrazione</title>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: Arial; padding: 20px; background-color: #f0f8ff; }
-        form { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px #ccc; }
-        input[type="text"], input[type="email"], input[type="password"] {
-            width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px;
-        }
-        input[type="submit"] {
-            background-color: #4CAF50; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer;
-        }
-        .error { color: red; }
-    </style>
-</head>
-<body>
-
-<h2>Registrati</h2>
-
-<?php
-if (!empty($errors)) {
-    echo "<div class='error'><ul>";
-    foreach ($errors as $e) {
-        echo "<li>$e</li>";
-    }
-    echo "</ul></div>";
-}
-?>
-
-<form method="post">
-    <label>Email:</label>
-    <input type="email" name="email" required>
-
-    <label>Nome visibile:</label>
-    <input type="text" name="display_name" required>
-
-    <label>Password:</label>
-    <input type="password" name="password" required>
-
-    <label>Conferma Password:</label>
-    <input type="password" name="confirm_password" required>
-
-    <input type="submit" value="Registrati">
-</form>
-
-</body>
-</html>
 

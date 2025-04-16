@@ -1,7 +1,7 @@
 import React, { useEffect, useCallback, useState, useRef } from 'react';
 import { loadFull } from 'tsparticles';
 import { tsParticles } from 'tsparticles-engine';
-import { Button, Modal, Form, Alert } from 'react-bootstrap';
+import { Button, Modal, Form, Alert, Spinner } from 'react-bootstrap';
 import Nebbia from './components/Nebbia';
 import Lucciole from './components/Lucciole';
 import useParallax from './hooks/useParallax';
@@ -16,6 +16,114 @@ import * as THREE from 'three'; // Per la generazione della noise map
 
 
 const App = () => {
+  
+  // Stati autenticazione
+  const [authData, setAuthData] = useState({
+    token: localStorage.getItem('token') || null,
+    user: JSON.parse(localStorage.getItem('user') || null)
+  });
+
+  const [showLogin, setShowLogin] = useState(false);
+  const [showSignup, setShowSignup] = useState(false);
+
+   // Stati per form
+   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+   const [signupForm, setSignupForm] = useState({ 
+     name: '', 
+     email: '', 
+     password: '', 
+     confirmPassword: '' 
+   });
+   // Stati di caricamento e errore
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  // Handler per il login
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('email', loginForm.email);
+      formData.append('password', loginForm.password);
+
+      const response = await fetch('http://tuoserver.com/path/to/login.php', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        setAuthData({ token: data.token, user: data.user });
+        setShowLogin(false);
+        setSuccess('Login effettuato con successo!');
+        setTimeout(() => setSuccess(''), 3000);
+      } else {
+        setError(data.message || 'Credenziali non valide');
+      }
+    } catch (err) {
+      setError('Errore di connessione al server');
+      console.error('Login error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+// Handler per la registrazione
+const handleSignup = async (e: React.FormEvent) => {
+  e.preventDefault();
+  
+  if (signupForm.password !== signupForm.confirmPassword) {
+    setError('Le password non coincidono');
+    return;
+  }
+
+  setLoading(true);
+  setError('');
+
+  try {
+    const formData = new FormData();
+    formData.append('name', signupForm.name);
+    formData.append('email', signupForm.email);
+    formData.append('password', signupForm.password);
+
+    const response = await fetch('http://tuoserver.com/path/to/register.php', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+      setShowSignup(false);
+      setSuccess('Registrazione completata! Effettua il login');
+      setTimeout(() => setSuccess(''), 5000);
+      setSignupForm({ name: '', email: '', password: '', confirmPassword: '' });
+    } else {
+      setError(data.message || 'Errore durante la registrazione');
+    }
+  } catch (err) {
+    setError('Errore di connessione al server');
+    console.error('Signup error:', err);
+  } finally {
+    setLoading(false);
+  }
+};
+// Logout
+const handleLogout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  setAuthData({ token: null, user: null });
+  setSuccess('Logout effettuato con successo');
+  setTimeout(() => setSuccess(''), 3000);
+};
+
   // Configurazione particelle
   const particlesInit = useCallback(async (engine: Engine) => {
     await loadFull(engine);
@@ -137,84 +245,7 @@ const App = () => {
       resetParticles();
     }
   };
-
-  // Stati per autenticazione
-  const [showLogin, setShowLogin] = useState(false);
-  const [showSignup, setShowSignup] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  
-  // Stati per form
-  const [loginData, setLoginData] = useState({ email: '', password: '' });
-  const [signupData, setSignupData] = useState({ 
-    name: '', 
-    email: '', 
-    password: '', 
-    confirmPassword: '' 
-  });
-
-  // Handler per autenticazione (come prima)
-  const handleLogin = async () => { 
-    setError('');
-    try {
-      const formData = new FormData();
-      formData.append('email', loginData.email);
-      formData.append('password', loginData.password);
-
-      const response = await fetch('http://tuoserver.com/path/to/login.php', {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        localStorage.setItem('authToken', data.token);
-        setShowLogin(false);
-        setSuccess('Login effettuato con successo!');
-        setTimeout(() => setSuccess(''), 3000);
-      } else {
-        setError(data.message || 'Errore durante il login');
-      }
-    } catch (err) {
-      setError('Errore di connessione al server');
-      console.error('Login error:', err);
-    }    
-   };
-
-  const handleSignup = async () => { 
-    if (signupData.password !== signupData.confirmPassword) {
-      setError('Le password non coincidono!');
-      return;
-    }
-
-    setError('');
-    try {
-      const formData = new FormData();
-      formData.append('name', signupData.name);
-      formData.append('email', signupData.email);
-      formData.append('password', signupData.password);
-
-      const response = await fetch('http://tuoserver.com/path/to/register.php', {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
  
-      if (data.success) {
-        setShowSignup(false);
-        setSuccess('Registrazione completata! Ora puoi effettuare il login');
-        setTimeout(() => setSuccess(''), 5000);
-        setSignupData({ name: '', email: '', password: '', confirmPassword: '' });
-      } else {
-        setError(data.message || 'Errore durante la registrazione');
-      }
-    } catch (err) {
-      setError('Errore di connessione al server');
-      console.error('Signup error:', err);
-    }
-   };
 
   return (
     <div className="app-container">
@@ -234,132 +265,189 @@ const App = () => {
       />
 
       {/* Contenuto principale */}
-      <div className="content-wrapper" style={{ position: 'relative', zIndex: 1 }}>
-        {/* Messaggi e modali... */}
-        {error && <Alert variant="danger">{error}</Alert>}
-        {success && <Alert variant="success">{success}</Alert>}
+      <div className="content" style={{ position: 'relative', zIndex: 1 }}>
+        {/* Messaggi globali */}
+        {error && (
+          <Alert variant="danger" onClose={() => setError('')} dismissible>
+            {error}
+          </Alert>
+        )}
+        {success && (
+          <Alert variant="success" onClose={() => setSuccess('')} dismissible>
+            {success}
+          </Alert>
+        )}
 
         {/* Pulsanti auth */}
-        <header className="auth-buttons">
-          <Button className="auth-btn login-btn" onClick={() => setShowLogin(true)}>
-            Accedi
-          </Button>
-          <Button className="auth-btn signup-btn" onClick={() => setShowSignup(true)}>
-            Registrati
-          </Button>
-        </header>
+        <div className="auth-buttons">
+          {authData.token ? (
+            <>
+              <span className="text-light me-3">Ciao, {authData.user?.name}</span>
+              <Button onClick={handleLogout} className="glass-btn">
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button 
+                onClick={() => setShowLogin(true)} 
+                className="me-2 glass-btn"
+              >
+                Login
+              </Button>
+              <Button 
+                onClick={() => setShowSignup(true)}
+                className="glass-btn-primary"
+              >
+                Signup
+              </Button>
+            </>
+          )}
+        </div>
 
-        
-      </div>
-
-      {/* Modali... */}
-      <Modal 
-      show={showLogin} 
-      onHide={() => setShowLogin(false)} 
-      centered 
-      dialogClassName="glass-modal" 
-      contentClassName="glass-content"
-      >
-      <Modal.Header className="glass-header">
-          <Modal.Title>Accedi al tuo account</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="glass-body">
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control 
-                type="email" 
-                placeholder="tua@email.com" 
-                className="glass-input"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Password</Form.Label>
-              <Form.Control 
-                type="password" 
-                placeholder="Password" 
-                className="glass-input"
-              />
-            </Form.Group>
+      {/* Modale Login */}
+      <Modal
+          show={showLogin}
+          onHide={() => setShowLogin(false)}
+          centered
+          dialogClassName="glass-modal"
+          contentClassName="glass-content"
+        >
+          <Modal.Header className="glass-header">
+            <Modal.Title>Accedi</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleLogin}>
+            <Modal.Body className="glass-body">
+              <Form.Group className="mb-3">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  placeholder="tua@email.com"
+                  value={loginForm.email}
+                  onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
+                  className="glass-input"
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  placeholder="Password"
+                  value={loginForm.password}
+                  onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                  className="glass-input"
+                  required
+                />
+              </Form.Group>
+            </Modal.Body>
+            <Modal.Footer className="glass-footer">
+              <Button 
+                variant="secondary" 
+                onClick={() => setShowLogin(false)}
+                className="glass-btn"
+                disabled={loading}
+              >
+                Chiudi
+              </Button>
+              <Button 
+                variant="primary" 
+                type="submit"
+                className="glass-btn-primary"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Spinner animation="border" size="sm" />
+                ) : (
+                  'Accedi'
+                )}
+              </Button>
+            </Modal.Footer>
           </Form>
-        </Modal.Body>
-        <Modal.Footer className="glass-footer">
-          <Button 
-            variant="secondary" 
-            onClick={() => setShowLogin(false)}
-            className="glass-btn"
-          >
-            Chiudi
-          </Button>
-          <Button 
-            variant="primary" 
-            className="glass-btn-primary"
-          >
-            Accedi
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        </Modal>
 
-      <Modal show={showSignup}
-        onHide={() => setShowSignup(false)}
-        centered
-        dialogClassName="glass-modal"
-        contentClassName="glass-content">
-      <Modal.Header className="glass-header">
-          <Modal.Title>Crea un account</Modal.Title>
-        </Modal.Header>
-        <Modal.Body className="glass-body">
-          <Form>
-            <Form.Group className="mb-3">
-              <Form.Label>Nome</Form.Label>
-              <Form.Control 
-                type="text" 
-                placeholder="Il tuo nome" 
-                className="glass-input"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Email</Form.Label>
-              <Form.Control 
-                type="email" 
-                placeholder="tua@email.com" 
-                className="glass-input"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Password</Form.Label>
-              <Form.Control 
-                type="password" 
-                placeholder="Password" 
-                className="glass-input"
-              />
-            </Form.Group>
-            <Form.Group className="mb-3">
-              <Form.Label>Conferma Password</Form.Label>
-              <Form.Control 
-                type="password" 
-                placeholder="Conferma Password" 
-                className="glass-input"
-              />
-            </Form.Group>
+        {/* Modale Registrazione */}
+        <Modal
+          show={showSignup}
+          onHide={() => setShowSignup(false)}
+          centered
+          dialogClassName="glass-modal"
+          contentClassName="glass-content"
+        >
+          <Modal.Header className="glass-header">
+            <Modal.Title>Registrati</Modal.Title>
+          </Modal.Header>
+          <Form onSubmit={handleSignup}>
+            <Modal.Body className="glass-body">
+              <Form.Group className="mb-3">
+                <Form.Label>Nome</Form.Label>
+                <Form.Control
+                  type="text"
+                  placeholder="Il tuo nome"
+                  value={signupForm.name}
+                  onChange={(e) => setSignupForm({...signupForm, name: e.target.value})}
+                  className="glass-input"
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  placeholder="tua@email.com"
+                  value={signupForm.email}
+                  onChange={(e) => setSignupForm({...signupForm, email: e.target.value})}
+                  className="glass-input"
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  placeholder="Password"
+                  value={signupForm.password}
+                  onChange={(e) => setSignupForm({...signupForm, password: e.target.value})}
+                  className="glass-input"
+                  required
+                />
+              </Form.Group>
+              <Form.Group className="mb-3">
+                <Form.Label>Conferma Password</Form.Label>
+                <Form.Control
+                  type="password"
+                  placeholder="Conferma Password"
+                  value={signupForm.confirmPassword}
+                  onChange={(e) => setSignupForm({...signupForm, confirmPassword: e.target.value})}
+                  className="glass-input"
+                  required
+                />
+              </Form.Group>
+            </Modal.Body>
+            <Modal.Footer className="glass-footer">
+              <Button 
+                variant="secondary" 
+                onClick={() => setShowSignup(false)}
+                className="glass-btn"
+                disabled={loading}
+              >
+                Chiudi
+              </Button>
+              <Button 
+                variant="primary" 
+                type="submit"
+                className="glass-btn-primary"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Spinner animation="border" size="sm" />
+                ) : (
+                  'Registrati'
+                )}
+              </Button>
+            </Modal.Footer>
           </Form>
-        </Modal.Body>
-        <Modal.Footer className="glass-footer">
-          <Button 
-            variant="secondary" 
-            onClick={() => setShowSignup(false)}
-            className="glass-btn"
-          >
-            Chiudi
-          </Button>
-          <Button 
-            variant="primary" 
-            className="glass-btn-primary"
-          >
-            Registrati
-          </Button>
-        </Modal.Footer>
-      </Modal>
+        </Modal>
       <div className="text-center p-5 text-light">
             <h1 className="glow display-4 fw-bold">
             Coltiva i tuoi ricordi<br />nel giardino digitale
@@ -380,7 +468,7 @@ const App = () => {
           <h6 className="mb-2">Beta 0.10 - Polygon Ecosystem</h6>
         </div>
       </div>
-    
+    </div>
   );
 };
 
