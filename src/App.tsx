@@ -103,7 +103,7 @@ const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
       formData.append('email', loginForm.email);
       formData.append('password', loginForm.password);
 
-      const response = await fetch('http://tuoserver.com/path/to/login.php', {
+      const response = await fetch('backend/api/login.php', {
         method: 'POST',
         body: formData
       });
@@ -120,9 +120,9 @@ const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
       } else {
         setError(data.message || 'Credenziali non valide');
       }
-    } catch (err) {
+    } catch (error) {
       setError('Errore di connessione al server');
-      console.error('Login error:', err);
+      console.error('Login error:', error);
     } finally {
       setLoading(false);
     }
