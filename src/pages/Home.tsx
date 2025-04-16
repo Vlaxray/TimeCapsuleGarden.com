@@ -43,10 +43,18 @@ const Home = () => {
           <div className="space-y-6">
             <TokenBalance balance={150} />
             <QuickActions />
+            <div>
+    <a
+      href="/marketplace"
+      className="inline-block bg-indigo-600 text-white px-4 py-2 rounded-lg shadow hover:bg-indigo-700 transition"
+    >
+      Vai al Marketplace
+    </a>
           </div>
         </div>
       </div>
     </div>
+  </div>
   );
 };
 

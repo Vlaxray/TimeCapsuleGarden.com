@@ -15,11 +15,14 @@ import useParallax from './hooks/useParallax';
 import type { Engine } from 'tsparticles-engine';
 import './styles/GlassModal.css'; // CSS per l'effetto vetro
 import * as THREE from 'three'; // Per la generazione della noise map
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import Home from './pages/Home'
 
 
 
 const App = () => {
-  
+ 
+  const navigate = useNavigate()
   // Stati autenticazione
   const [authData, setAuthData] = useState({
     token: localStorage.getItem('token') || null,
@@ -88,41 +91,49 @@ const handleWheel = (e: React.WheelEvent) => {
   return;
 };
 
-  // Handler per il login
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+ 
+  // Handler per il login con redirect
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
+  setError('');
+  setSuccess('');
 
-    try {
-      const formData = new FormData();
-      formData.append('email', loginForm.email);
-      formData.append('password', loginForm.password);
+  try {
+    const formData = new FormData();
+    formData.append('email', loginForm.email);
+    formData.append('password', loginForm.password);
 
-      const response = await fetch('backend/api/login.php', {
-        method: 'POST',
-        body: formData
-      });
+    const response = await fetch('/api/api/login.php', {
+      method: 'POST',
+      body: formData
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (data.success) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        setAuthData({ token: data.token, user: data.user });
+    if (data.success) {
+      // Salvataggio dati di autenticazione
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      setAuthData({ token: data.token, user: data.user });
+      
+      // Messaggio di successo e chiusura modale
+      setSuccess('Login effettuato con successo!');
+      setTimeout(() => {
         setShowLogin(false);
-        setSuccess('Login effettuato con successo!');
-        setTimeout(() => setSuccess(''), 3000);
-      } else {
-        setError(data.message || 'Credenziali non valide');
-      }
-    } catch (error) {
-      setError('Errore di connessione al server');
-      console.error('Login error:', error);
-    } finally {
-      setLoading(false);
+        setSuccess('');
+        navigate('/home'); // Redirect alla Home dopo 1.5 secondi
+      }, 1500);
+    } else {
+      setError(data.message || 'Credenziali non valide');
     }
-  };
+  } catch (error) {
+    setError('Errore di connessione al server');
+    console.error('Login error:', error);
+  } finally {
+    setLoading(false);
+  }
+};
 
 // Handler per la registrazione
 const handleSignup = async (e: React.FormEvent) => {
@@ -142,18 +153,25 @@ const handleSignup = async (e: React.FormEvent) => {
     formData.append('email', signupForm.email);
     formData.append('password', signupForm.password);
 
-    const response = await fetch('http://tuoserver.com/path/to/register.php', {
+    const response = await fetch('/api/api/signup.php', {
       method: 'POST',
-      body: formData
-    });
+      body: JSON.stringify({
+        name: 'Mario',
+        email: 'mario@example.com',
+        password: 'password123'
+    })
+  });
 
     const data = await response.json();
 
     if (data.success) {
-      setShowSignup(false);
-      setSuccess('Registrazione completata! Effettua il login');
-      setTimeout(() => setSuccess(''), 5000);
-      setSignupForm({ name: '', email: '', password: '', confirmPassword: '' });
+      setSuccess('Registrazione completata con successo!');
+      setTimeout(() => {
+        setShowSignup(false); // Chiudi modale registrazione
+        setSignupForm({ name: '', email: '', password: '', confirmPassword: '' }); // Resetta il form
+        setShowLogin(true); // Apri modale login
+        setSuccess(''); // Resetta messaggio successo
+      }, 2000);
     } else {
       setError(data.message || 'Errore durante la registrazione');
     }
@@ -166,11 +184,28 @@ const handleSignup = async (e: React.FormEvent) => {
 };
 // Logout
 const handleLogout = () => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  setAuthData({ token: null, user: null });
-  setSuccess('Logout effettuato con successo');
-  setTimeout(() => setSuccess(''), 3000);
+  // Mostra loader durante l'operazione
+  setLoading(true);
+  
+  // Simulazione operazione asincrona (puoi rimuovere il timeout se non serve)
+  setTimeout(() => {
+    // Pulizia dati di autenticazione
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setAuthData({ token: null, user: null });
+    
+    // Feedback all'utente
+    setSuccess('Logout effettuato con successo!');
+    
+    // Reset stati e redirect
+    setTimeout(() => {
+      setSuccess('');
+      setLoading(false);
+      window.location.href = '/'; // Redirect alla home
+      // Oppure con React Router: navigate('/');
+    }, 1500);
+    
+  }, 500); // Ritardo simulazione operazione
 };
 
   // Configurazione particelle
@@ -259,7 +294,7 @@ const handleLogout = () => {
         },
         onclick: {
           enable: true,
-          mode: "push" // Modificato da "push" a "remove"
+          mode: "push" 
         },
         resize: true
       },
@@ -369,147 +404,180 @@ const handleLogout = () => {
 
        {/* Modale Login */}
        <Modal
-          show={showLogin}
-          onHide={() => setShowLogin(false)}
-          centered
-          dialogClassName="glass-modal"
-          contentClassName="glass-content"
-        >
-          <Modal.Header className="glass-header">
-            <Modal.Title>Accedi</Modal.Title>
-          </Modal.Header>
-          <Form onSubmit={handleLogin}>
-            <Modal.Body className="glass-body">
-              <Form.Group className="mb-3">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  placeholder="tua@email.com"
-                  value={loginForm.email}
-                  onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
-                  className="glass-input"
-                  required
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Password"
-                  value={loginForm.password}
-                  onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
-                  className="glass-input"
-                  required
-                />
-              </Form.Group>
-            </Modal.Body>
-            <Modal.Footer className="glass-footer">
-              <Button 
-                variant="secondary" 
-                onClick={() => setShowLogin(false)}
-                className="glass-btn"
-                disabled={loading}
-              >
-                Chiudi
-              </Button>
-              <Button 
-                variant="primary" 
-                type="submit"
-                className="glass-btn-primary"
-                disabled={loading}
-              >
-                {loading ? (
-                  <Spinner animation="border" size="sm" />
-                ) : (
-                  'Accedi'
-                )}
-              </Button>
-            </Modal.Footer>
-          </Form>
-        </Modal>
+  show={showLogin}
+  onHide={() => setShowLogin(false)}
+  centered
+  dialogClassName="glass-modal"
+  contentClassName="glass-content"
+>
+  <Modal.Header className="glass-header">
+    <Modal.Title>Accedi</Modal.Title>
+  </Modal.Header>
+  <Form onSubmit={(e) => {
+    e.preventDefault();
+    setLoading(true);
+    
+    // Simulazione login con redirect
+    setTimeout(() => {
+      setLoading(false);
+      setShowLogin(false);
+      window.location.href = '/home'; // Redirect alla Home
+    }, 1500);
+  }}>
+    <Modal.Body className="glass-body">
+      <Form.Group className="mb-3">
+        <Form.Label>Email</Form.Label>
+        <Form.Control
+          type="email"
+          placeholder="tua@email.com"
+          value={loginForm.email}
+          onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
+          className="glass-input"
+          required
+        />
+      </Form.Group>
+      <Form.Group className="mb-3">
+        <Form.Label>Password</Form.Label>
+        <Form.Control
+          type="password"
+          placeholder="Password"
+          value={loginForm.password}
+          onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+          className="glass-input"
+          required
+        />
+      </Form.Group>
+    </Modal.Body>
+    <Modal.Footer className="glass-footer">
+      <Button 
+        variant="secondary" 
+        onClick={() => setShowLogin(false)}
+        className="glass-btn"
+        disabled={loading}
+      >
+        Chiudi
+      </Button>
+      <Button 
+        variant="primary" 
+        type="submit"
+        className="glass-btn-primary"
+        disabled={loading}
+      >
+        {loading ? (
+          <Spinner animation="border" size="sm" />
+        ) : (
+          'Accedi'
+        )}
+      </Button>
+    </Modal.Footer>
+  </Form>
+</Modal>
 
          {/* Modale Registrazione */}
          <Modal
-          show={showSignup}
-          onHide={() => setShowSignup(false)}
-          centered
-          dialogClassName="glass-modal"
-          contentClassName="glass-content"
-        >
-          <Modal.Header className="glass-header">
-            <Modal.Title>Registrati</Modal.Title>
-          </Modal.Header>
-          <Form onSubmit={handleSignup}>
-            <Modal.Body className="glass-body">
-              <Form.Group className="mb-3">
-                <Form.Label>Nome</Form.Label>
-                <Form.Control
-                  type="text"
-                  placeholder="Il tuo nome"
-                  value={signupForm.name}
-                  onChange={(e) => setSignupForm({...signupForm, name: e.target.value})}
-                  className="glass-input"
-                  required
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Email</Form.Label>
-                <Form.Control
-                  type="email"
-                  placeholder="tua@email.com"
-                  value={signupForm.email}
-                  onChange={(e) => setSignupForm({...signupForm, email: e.target.value})}
-                  className="glass-input"
-                  required
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Password"
-                  value={signupForm.password}
-                  onChange={(e) => setSignupForm({...signupForm, password: e.target.value})}
-                  className="glass-input"
-                  required
-                />
-              </Form.Group>
-              <Form.Group className="mb-3">
-                <Form.Label>Conferma Password</Form.Label>
-                <Form.Control
-                  type="password"
-                  placeholder="Conferma Password"
-                  value={signupForm.confirmPassword}
-                  onChange={(e) => setSignupForm({...signupForm, confirmPassword: e.target.value})}
-                  className="glass-input"
-                  required
-                />
-              </Form.Group>
-            </Modal.Body>
-            <Modal.Footer className="glass-footer">
-              <Button 
-                variant="secondary" 
-                onClick={() => setShowSignup(false)}
-                className="glass-btn"
-                disabled={loading}
-              >
-                Chiudi
-              </Button>
-              <Button 
-                variant="primary" 
-                type="submit"
-                className="glass-btn-primary"
-                disabled={loading}
-              >
-                {loading ? (
-                  <Spinner animation="border" size="sm" />
-                ) : (
-                  'Registrati'
-                )}
-              </Button>
-            </Modal.Footer>
-          </Form>
-        </Modal>
+  show={showSignup}
+  onHide={() => {
+    setShowSignup(false);
+    setError('');
+  }}
+  centered
+  dialogClassName="glass-modal"
+  contentClassName="glass-content"
+>
+  <Modal.Header className="glass-header">
+    <Modal.Title>Registrati</Modal.Title>
+  </Modal.Header>
+  <Form onSubmit={handleSignup}>
+    <Modal.Body className="glass-body">
+      {/* Messaggi di feedback */}
+      {error && (
+        <Alert variant="danger" className="glass-alert">
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert variant="success" className="glass-alert">
+          {success}
+        </Alert>
+      )}
+
+      <Form.Group className="mb-3">
+        <Form.Label>Nome</Form.Label>
+        <Form.Control
+          type="text"
+          placeholder="Il tuo nome"
+          value={signupForm.name}
+          onChange={(e) => setSignupForm({...signupForm, name: e.target.value})}
+          className="glass-input"
+          required
+        />
+      </Form.Group>
+      
+      <Form.Group className="mb-3">
+        <Form.Label>Email</Form.Label>
+        <Form.Control
+          type="email"
+          placeholder="tua@email.com"
+          value={signupForm.email}
+          onChange={(e) => setSignupForm({...signupForm, email: e.target.value})}
+          className="glass-input"
+          required
+        />
+      </Form.Group>
+      
+      <Form.Group className="mb-3">
+        <Form.Label>Password</Form.Label>
+        <Form.Control
+          type="password"
+          placeholder="Password"
+          value={signupForm.password}
+          onChange={(e) => setSignupForm({...signupForm, password: e.target.value})}
+          className="glass-input"
+          required
+        />
+      </Form.Group>
+      
+      <Form.Group className="mb-3">
+        <Form.Label>Conferma Password</Form.Label>
+        <Form.Control
+          type="password"
+          placeholder="Conferma Password"
+          value={signupForm.confirmPassword}
+          onChange={(e) => setSignupForm({...signupForm, confirmPassword: e.target.value})}
+          className="glass-input"
+          required
+        />
+      </Form.Group>
+    </Modal.Body>
+    
+    <Modal.Footer className="glass-footer">
+      <Button 
+        variant="secondary" 
+        onClick={() => {
+          setShowSignup(false);
+          setError('');
+        }}
+        className="glass-btn"
+        disabled={loading}
+      >
+        Chiudi
+      </Button>
+      
+      <Button 
+        variant="primary" 
+        type="submit"
+        className="glass-btn-primary"
+        disabled={loading}
+      >
+        {loading ? (
+          <Spinner animation="border" size="sm" />
+        ) : (
+          'Registrati'
+        )}
+      </Button>
+    </Modal.Footer>
+  </Form>
+</Modal>
 
       {/* Contenuto principale */}
       <div className="content" style={{ position: 'relative', zIndex: 1 }}>
