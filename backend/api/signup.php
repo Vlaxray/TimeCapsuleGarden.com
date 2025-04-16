@@ -15,7 +15,7 @@ $name = $data['name'] ?? '';
 $email = $data['email'] ?? '';
 $password = $data['password'] ?? '';
 
-require_once 'db_connect.php';
+require_once '../config/db.php';
 
 // Verifica se l'email esiste già
 $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");

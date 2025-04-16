@@ -55,8 +55,8 @@ const Sidebar: React.FC = () => {
 
         {/* Calendario */}
         <Link to="/calendar" className={`nav-item ${isActive('/calendar')}`}>
-          <span role="img" aria-label="calendario">📅</span>
-          <span className="nav-text">Calendario</span>
+        <span role="img" aria-label="calendario">📅</span>
+        <span className="nav-text">Calendario</span>
         </Link>
 
         {/* Giardino */}

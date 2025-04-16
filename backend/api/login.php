@@ -16,7 +16,7 @@ $email = trim($data["email"] ?? '');
 $password = $data["password"] ?? '';
 $errors = [];
 
-require_once '/Ampps/www/mystuff/TimeCapsuleGarden/vite-timecapsule/backend/config/db.php';
+require_once '../config/db.php';
 
 if (empty($email) || empty($password)) {
     http_response_code(400);

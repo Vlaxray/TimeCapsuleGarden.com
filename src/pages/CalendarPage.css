@@ -1,0 +1,37 @@
+.calendar-page {
+    padding: 2rem;
+  }
+  
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+  
+  .calendar-header {
+    font-weight: bold;
+    text-align: center;
+    padding: 0.5rem;
+    background: #E4F5E8;
+  }
+  
+  .calendar-day {
+    border: 1px solid #E0E0E0;
+    min-height: 80px;
+    padding: 0.3rem;
+    position: relative;
+  }
+  
+  .calendar-day.has-plant {
+    background: rgba(42, 127, 98, 0.05);
+  }
+  
+  .plant-marker {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin: 2px;
+    display: inline-block;
+    cursor: help;
+  }
