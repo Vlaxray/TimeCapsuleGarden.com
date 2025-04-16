@@ -59,37 +59,33 @@ const sections = [
   },
   {
     title: "🪴 Scegli il tuo seme",
-    content: "Cactus, Quercia o Rosa? Ogni pianta rappresenta un'emozione",
+    content: "Cactus, Quercia, Rosa?",
     bg: "linear-gradient(to bottom, #003d1f, #005c2b)",
     component: <SeedCreator />
   },
   {
-    title: "💌 Crea la tua capsula",
-    content: "Aggiungi testo, emozioni e media alla tua time capsule",
+    title: "💌 Crea tua seme-capsula del tempo",
+    content: "Aggiungi testo, emozioni e media alla tua seme-capsula",
     bg: "linear-gradient(to bottom, #005c2b, #007a36)"
   },
   {
     title: "🖼️ Genera NFT",
-    content: "Trasforma il tuo seme in un'opera d'arte digitale unica",
+    content: "Trasforma il tuo seme in un'opera d'arte digitale unica e mettilo nel tuo portafoglio NFT",
     bg: "linear-gradient(to bottom, #007a36, #009942)",
     component: <NFTGallery />
   },
   {
-    title: "🌍 Condividi",
-    content: "Scambia i tuoi semi NFT alla cieca con altri giardinieri digitali",
+    title: "🌍 Condividi o Vendi?",
+    content: "Le tue seme-capsule personali: decidi se tenerle per te, regalarle alle persone a te care o venderle sul MarketPlace",
     bg: "linear-gradient(to bottom, #009942, #00b74f)",
     component: <Dashboard />
   }
 ];
 
 // Handler per scroll con rotella
-const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-  if (!parallaxRef.current) return;
-  if (e.deltaY > 0) {
-    parallaxRef.current.scrollTo((currentSection + 1) % sections.length);
-  } else {
-    parallaxRef.current.scrollTo((currentSection - 1 + sections.length) % sections.length);
-  }
+const handleWheel = (e: React.WheelEvent) => {
+  e.preventDefault();
+  return;
 };
 
   // Handler per il login
