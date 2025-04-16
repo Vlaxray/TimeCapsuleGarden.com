@@ -1,12 +1,10 @@
 <?php
-session_start();
-require_once '/Ampps/www/mystuff/TimeCapsuleGarden/vite-timecapsule/backend/config/db.php';
-
-header('Content-Type: application/json');
-header("Access-Control-Allow-Origin: http://localhost:3000"); // Sostituisci con il tuo URL frontend
+header("Content-Type: application/json");
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Origin: http://localhost:5173/");
 header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
-header("Content-Type: application/json");
+header("Access-Control-Allow-Credentials: true");
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit(0);
@@ -14,11 +12,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 // Ottieni i dati JSON dal body della richiesta
 $data = json_decode(file_get_contents("php://input"), true);
-
 $email = trim($data["email"] ?? '');
 $password = $data["password"] ?? '';
-
 $errors = [];
+
+require_once '/Ampps/www/mystuff/TimeCapsuleGarden/vite-timecapsule/backend/config/db.php';
 
 if (empty($email) || empty($password)) {
     http_response_code(400);
@@ -26,36 +24,44 @@ if (empty($email) || empty($password)) {
     exit;
 }
 
-$stmt = $pdo->prepare("SELECT id, password_hash, display_name FROM users WHERE email = ?");
-$stmt->execute([$email]);
+$stmt = $conn->prepare("SELECT * FROM users WHERE email = ?");
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$result = $stmt->get_result();
 
-if ($stmt->rowCount() === 1) {
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+if ($result->num_rows > 0) {
+    $user = $result->fetch_assoc();
     
-    if (password_verify($password, $user['password_hash'])) {
-        $_SESSION["user_id"] = $user["id"];
-        $_SESSION["display_name"] = $user["display_name"];
+    if (password_verify($password, $user['password'])) {
+        // 4. Genera token (esempio semplice)
+        $token = bin2hex(random_bytes(32));
+        $expires = time() + 3600; // 1 ora
         
-        echo json_encode(["success" => true, "displayName" => $user["display_name"]]);
-        exit;
+        // 5. Salva token nel database
+        $stmt = $conn->prepare("UPDATE users SET token = ?, token_expires = ? WHERE id = ?");
+        $stmt->bind_param("sii", $token, $expires, $user['id']);
+        $stmt->execute();
+        
+        // 6. Risposta
+        echo json_encode([
+            'success' => true,
+            'token' => $token,
+            'user' => [
+                'id' => $user['id'],
+                'name' => $user['name'],
+                'email' => $user['email']
+            ]
+        ]);
     } else {
-        http_response_code(401);
-        echo json_encode(["success" => false, "message" => "Password errata."]);
-        exit;
+        echo json_encode([
+            'success' => false,
+            'message' => 'Credenziali non valide'
+        ]);
     }
 } else {
-    http_response_code(404);
-    echo json_encode(["success" => false, "message" => "Utente non trovato."]);
-    exit;
-}
-
-
-if (!empty($errors)) {
-    echo "<div class='error'><ul>";
-    foreach ($errors as $e) {
-        echo "<li>$e</li>";
-    }
-    echo "</ul></div>";
+    echo json_encode([
+        'success' => false,
+        'message' => 'Utente non trovato'
+    ]);
 }
 ?>
-

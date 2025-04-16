@@ -1,14 +1,17 @@
 import React, { useEffect, useCallback, useState, useRef } from 'react';
-import { loadFull } from 'tsparticles';
-import { tsParticles } from 'tsparticles-engine';
 import { Button, Modal, Form, Alert, Spinner } from 'react-bootstrap';
+import { Parallax, ParallaxLayer, IParallax } from '@react-spring/Parallax';
+import Particles from 'react-tsparticles';
+import { loadFull } from 'tsparticles';
+import Dashboard from './components/Dashboard';
+import './styles/effects.css';
+import './styles/App.css';
+import SeedCreator from './components/SeedCreator';
+import NFTGallery from './components/NFTGallery';
+import { tsParticles } from 'tsparticles-engine';
 import Nebbia from './components/Nebbia';
 import Lucciole from './components/Lucciole';
 import useParallax from './hooks/useParallax';
-import './styles/effects.css';
-import Dashboard from './components/Dashboard';
-import './styles/App.css';
-import Particles from 'react-tsparticles';
 import type { Engine } from 'tsparticles-engine';
 import './styles/GlassModal.css'; // CSS per l'effetto vetro
 import * as THREE from 'three'; // Per la generazione della noise map
@@ -20,15 +23,14 @@ const App = () => {
   // Stati autenticazione
   const [authData, setAuthData] = useState({
     token: localStorage.getItem('token') || null,
-    user: JSON.parse(localStorage.getItem('user') || null)
+    user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null
   });
 
+  //stati modali
   const [showLogin, setShowLogin] = useState(false);
   const [showSignup, setShowSignup] = useState(false);
-
-   // Stati per form
-   const [loginForm, setLoginForm] = useState({ email: '', password: '' });
-   const [signupForm, setSignupForm] = useState({ 
+  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [signupForm, setSignupForm] = useState({ 
      name: '', 
      email: '', 
      password: '', 
@@ -38,6 +40,57 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+
+   // Nuovi stati per parallax
+   const parallaxRef = useRef<IParallax | null>(null);
+   const [currentSection, setCurrentSection] = useState(0);
+ 
+ // Configurazione particelle
+ //const particlesInit = useCallback(async (engine: Engine) => {
+ // await loadFull(engine);
+//}, []);
+
+// Sezioni parallax
+const sections = [
+  {
+    title: "🌿 TimeCapsule Garden",
+    content: "Pianta il tuo seme digitale per il futuro",
+    bg: "linear-gradient(to bottom, #001f14, #003d1f)"
+  },
+  {
+    title: "🪴 Scegli il tuo seme",
+    content: "Cactus, Quercia o Rosa? Ogni pianta rappresenta un'emozione",
+    bg: "linear-gradient(to bottom, #003d1f, #005c2b)",
+    component: <SeedCreator />
+  },
+  {
+    title: "💌 Crea la tua capsula",
+    content: "Aggiungi testo, emozioni e media alla tua time capsule",
+    bg: "linear-gradient(to bottom, #005c2b, #007a36)"
+  },
+  {
+    title: "🖼️ Genera NFT",
+    content: "Trasforma il tuo seme in un'opera d'arte digitale unica",
+    bg: "linear-gradient(to bottom, #007a36, #009942)",
+    component: <NFTGallery />
+  },
+  {
+    title: "🌍 Condividi",
+    content: "Scambia i tuoi semi NFT alla cieca con altri giardinieri digitali",
+    bg: "linear-gradient(to bottom, #009942, #00b74f)",
+    component: <Dashboard />
+  }
+];
+
+// Handler per scroll con rotella
+const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
+  if (!parallaxRef.current) return;
+  if (e.deltaY > 0) {
+    parallaxRef.current.scrollTo((currentSection + 1) % sections.length);
+  } else {
+    parallaxRef.current.scrollTo((currentSection - 1 + sections.length) % sections.length);
+  }
+};
 
   // Handler per il login
   const handleLogin = async (e: React.FormEvent) => {
@@ -248,7 +301,7 @@ const handleLogout = () => {
  
 
   return (
-    <div className="app-container">
+    <div className="app-container" onWheel={handleWheel}>
       {/* Componente Particles - deve essere renderizzato direttamente qui */}
       <Particles
         id="tsparticles"
@@ -263,50 +316,63 @@ const handleLogout = () => {
           zIndex: -1
         }}
       />
+    
+      {/* Parallax scrolling */}
+      <Parallax 
+        ref={parallaxRef} 
+        pages={sections.length}
+      >
+        {sections.map((section, index) => (
+          <ParallaxLayer 
+            key={index}
+            offset={index}
+            speed={0.5}
+            style={{ 
+              background: section.bg,
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              alignItems: 'center',
+              color: 'white',
+              padding: '2rem'
+            }}
+          >
+            <h1 style={{ fontSize: '3rem', marginBottom: '1rem' }}>{section.title}</h1>
+            <p style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>{section.content}</p>
+            
+            {/* Mostra il componente specifico per la sezione */}
+            {section.component && (
+              <div style={{ width: '80%', maxWidth: '800px' }}>
+                {section.component}
+              </div>
+            )}
 
-      {/* Contenuto principale */}
-      <div className="content" style={{ position: 'relative', zIndex: 1 }}>
-        {/* Messaggi globali */}
-        {error && (
-          <Alert variant="danger" onClose={() => setError('')} dismissible>
-            {error}
-          </Alert>
-        )}
-        {success && (
-          <Alert variant="success" onClose={() => setSuccess('')} dismissible>
-            {success}
-          </Alert>
-        )}
+            {/* Pulsanti solo nella prima sezione */}
+            {index === 0 && (
+              <div className="hero-buttons">
+                <Button 
+                  variant="outline-light" 
+                  size="lg" 
+                  className="me-3"
+                  onClick={() => setShowLogin(true)}
+                >
+                  {authData.token ? 'Il mio giardino' : 'Accedi'}
+                </Button>
+                <Button 
+                  variant="success" 
+                  size="lg"
+                  onClick={() => { if (parallaxRef.current) parallaxRef.current.scrollTo(1); }}
+                >
+                  Esplora
+                </Button>
+              </div>
+            )}
+          </ParallaxLayer>
+        ))}
+      </Parallax>
 
-        {/* Pulsanti auth */}
-        <div className="auth-buttons">
-          {authData.token ? (
-            <>
-              <span className="text-light me-3">Ciao, {authData.user?.name}</span>
-              <Button onClick={handleLogout} className="glass-btn">
-                Logout
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button 
-                onClick={() => setShowLogin(true)} 
-                className="me-2 glass-btn"
-              >
-                Login
-              </Button>
-              <Button 
-                onClick={() => setShowSignup(true)}
-                className="glass-btn-primary"
-              >
-                Signup
-              </Button>
-            </>
-          )}
-        </div>
-
-      {/* Modale Login */}
-      <Modal
+       {/* Modale Login */}
+       <Modal
           show={showLogin}
           onHide={() => setShowLogin(false)}
           centered
@@ -366,8 +432,8 @@ const handleLogout = () => {
           </Form>
         </Modal>
 
-        {/* Modale Registrazione */}
-        <Modal
+         {/* Modale Registrazione */}
+         <Modal
           show={showSignup}
           onHide={() => setShowSignup(false)}
           centered
@@ -448,24 +514,46 @@ const handleLogout = () => {
             </Modal.Footer>
           </Form>
         </Modal>
-      <div className="text-center p-5 text-light">
-            <h1 className="glow display-4 fw-bold">
-            Coltiva i tuoi ricordi<br />nel giardino digitale
-          </h1>
-          <p className="mt-3 mb-4 fs-5">
-            Un ecosistema dove ogni pensiero è un seme NFT<br />
-            che cresce e fiorisce sulla blockchain.
-          </p>
-          <div className="d-flex justify-content-center mb-4 flex-wrap">
-            <Button className="btn-custom me-2">🌻 Pianta il tuo seme</Button>
-            <Button className="btn-custom">🐟 Connetti Wallet</Button>
-          </div>
-          
-          <h2 className="glow mt-5">Il tuo ecosistema digitale</h2>
-          <Dashboard />
-          <p className="fs-5">Nutri i tuoi ricordi e guardali crescere nel metaverso</p>
-          <div className="mt-4"><span style={{ fontSize: '3rem' }}>🌳</span></div>
-          <h6 className="mb-2">Beta 0.10 - Polygon Ecosystem</h6>
+
+      {/* Contenuto principale */}
+      <div className="content" style={{ position: 'relative', zIndex: 1 }}>
+        {/* Messaggi globali */}
+        {error && (
+          <Alert variant="danger" onClose={() => setError('')} dismissible>
+            {error}
+          </Alert>
+        )}
+        {success && (
+          <Alert variant="success" onClose={() => setSuccess('')} dismissible>
+            {success}
+          </Alert>
+        )}
+
+        {/* Pulsanti auth */}
+        <div className="auth-buttons">
+          {authData.token ? (
+            <>
+              <span className="text-light me-3">Ciao, {authData.user?.name}</span>
+              <Button onClick={handleLogout} className="glass-btn">
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button 
+                onClick={() => setShowLogin(true)} 
+                className="me-2 glass-btn"
+              >
+                Login
+              </Button>
+              <Button 
+                onClick={() => setShowSignup(true)}
+                className="glass-btn-primary"
+              >
+                Signup
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </div>
