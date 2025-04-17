@@ -21,12 +21,14 @@ import Home from './pages/Home'
 
 
 const App = () => {
- 
+     
+         
+  
   const navigate = useNavigate()
   // Stati autenticazione
   const [authData, setAuthData] = useState({
-    token: localStorage.getItem('token') || null,
-    user: localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')!) : null
+    token: localStorage.getItem('authToken') || null,
+    user: localStorage.getItem('userName') || null
   });
 
   //stati modali
@@ -56,7 +58,7 @@ const App = () => {
 // Sezioni parallax
 const sections = [
   {
-    title: "🌿 TimeCapsule Garden",
+    title: "🌿 Time Capsule Garden",
     content: "Pianta il tuo seme digitale per il futuro",
     bg: "linear-gradient(to bottom, #001f14, #003d1f)"
   },
@@ -93,95 +95,84 @@ const handleWheel = (e: React.WheelEvent) => {
 
  
   // Handler per il login con redirect
-const handleLogin = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setLoading(true);
-  setError('');
-  setSuccess('');
-
-  try {
-    const formData = new FormData();
-    formData.append('email', loginForm.email);
-    formData.append('password', loginForm.password);
-
-    const response = await fetch('/api/api/login.php', {
-      method: 'POST',
-      body: formData
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      // Salvataggio dati di autenticazione
-      localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      setAuthData({ token: data.token, user: data.user });
-      
-      // Messaggio di successo e chiusura modale
-      setSuccess('Login effettuato con successo!');
-      setTimeout(() => {
-        setShowLogin(false);
-        setSuccess('');
-        navigate('/home'); // Redirect alla Home dopo 1.5 secondi
-      }, 1500);
-    } else {
-      setError(data.message || 'Credenziali non valide');
-    }
-  } catch (error) {
-    setError('Errore di connessione al server');
-    console.error('Login error:', error);
-  } finally {
-    setLoading(false);
-  }
-};
-
-// Handler per la registrazione
-const handleSignup = async (e: React.FormEvent) => {
-  e.preventDefault();
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    setLoading(true)
   
-  if (signupForm.password !== signupForm.confirmPassword) {
-    setError('Le password non coincidono');
-    return;
+    const payload = {
+      email: loginForm.email,
+      password: loginForm.password
+    }
+  
+    try {
+      const res = await fetch('http://localhost:8000/login.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+  
+      const data = await res.json()
+  
+      if (res.ok && data.success) {
+        localStorage.setItem('authToken', data.token)
+        localStorage.setItem('userName', data.user.name)
+        setShowLogin(false)
+        setLoginForm({ email: '', password: '' })
+        navigate('/home');
+      } else {
+        setError(data.message || 'Credenziali non valide')
+      }
+    } catch (err) {
+      setError('Errore di connessione')
+    } finally {
+      setLoading(false)
+    }
   }
+  
+  
 
-  setLoading(true);
-  setError('');
+const handleSignup = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setError('')
+  setLoading(true)
+
+  // 1) Costruisci il body
+  const payload = {
+    name: signupForm.name,
+    email: signupForm.email,
+    password: signupForm.password
+  }
 
   try {
-    const formData = new FormData();
-    formData.append('name', signupForm.name);
-    formData.append('email', signupForm.email);
-    formData.append('password', signupForm.password);
-
-    const response = await fetch('/api/api/signup.php', {
+    // 2) Chiamata al tuo PHP
+    const res = await fetch('http://localhost:8000/signup.php', {
       method: 'POST',
-      body: JSON.stringify({
-        name: 'Mario',
-        email: 'mario@example.com',
-        password: 'password123'
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     })
-  });
+    const data = await res.json()
 
-    const data = await response.json();
-
-    if (data.success) {
-      setSuccess('Registrazione completata con successo!');
+    // 3) Gestisci la risposta
+    if (res.ok && data.success) {
+      setSuccess(data.message)             // es. “Registrazione avvenuta…”
       setTimeout(() => {
-        setShowSignup(false); // Chiudi modale registrazione
-        setSignupForm({ name: '', email: '', password: '', confirmPassword: '' }); // Resetta il form
-        setShowLogin(true); // Apri modale login
-        setSuccess(''); // Resetta messaggio successo
-      }, 2000);
+        setShowSignup(false)               // chiudi il modal
+        setShowLogin(true)                 // apri il login
+        setSignupForm({ name:'', email:'', password:'', confirmPassword:'' })
+        setSuccess('')
+      }, 1500)
     } else {
-      setError(data.message || 'Errore durante la registrazione');
+      setError(data.message || 'Errore durante il signup')
     }
-  } catch (err) {
-    setError('Errore di connessione al server');
-    console.error('Signup error:', err);
+  } catch {
+    setError('Impossibile raggiungere il server')
   } finally {
-    setLoading(false);
+    setLoading(false)
   }
 };
+
+
 // Logout
 const handleLogout = () => {
   // Mostra loader durante l'operazione
@@ -201,8 +192,8 @@ const handleLogout = () => {
     setTimeout(() => {
       setSuccess('');
       setLoading(false);
-      window.location.href = '/'; // Redirect alla home
-      // Oppure con React Router: navigate('/');
+      navigate('/'); // Redirect alla landing
+      
     }, 1500);
     
   }, 500); // Ritardo simulazione operazione
@@ -332,6 +323,7 @@ const handleLogout = () => {
  
 
   return (
+    
     <div className="app-container" onWheel={handleWheel}>
       {/* Componente Particles - deve essere renderizzato direttamente qui */}
       <Particles
@@ -402,36 +394,21 @@ const handleLogout = () => {
         ))}
       </Parallax>
 
-       {/* Modale Login */}
-       <Modal
-  show={showLogin}
-  onHide={() => setShowLogin(false)}
-  centered
-  dialogClassName="glass-modal"
-  contentClassName="glass-content"
->
+       {/* Modale Login */}{/* Modale Login */}{/* Modale Login */}{/* Modale Login */}
+       <Modal show={showLogin} onHide={() => setShowLogin(false)} centered dialogClassName="glass-modal" contentClassName="glass-content">
   <Modal.Header className="glass-header">
     <Modal.Title>Accedi</Modal.Title>
   </Modal.Header>
-  <Form onSubmit={(e) => {
-    e.preventDefault();
-    setLoading(true);
-    
-    // Simulazione login con redirect
-    setTimeout(() => {
-      setLoading(false);
-      setShowLogin(false);
-      window.location.href = '/home'; // Redirect alla Home
-    }, 1500);
-  }}>
+  <Form onSubmit={handleLogin}>
     <Modal.Body className="glass-body">
+      {error && <Alert variant="danger">{error}</Alert>}
       <Form.Group className="mb-3">
         <Form.Label>Email</Form.Label>
         <Form.Control
           type="email"
-          placeholder="tua@email.com"
+          placeholder="tuo@email.com"
           value={loginForm.email}
-          onChange={(e) => setLoginForm({...loginForm, email: e.target.value})}
+          onChange={e => setLoginForm({ ...loginForm, email: e.target.value })}
           className="glass-input"
           required
         />
@@ -442,38 +419,26 @@ const handleLogout = () => {
           type="password"
           placeholder="Password"
           value={loginForm.password}
-          onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+          onChange={e => setLoginForm({ ...loginForm, password: e.target.value })}
           className="glass-input"
           required
         />
       </Form.Group>
     </Modal.Body>
     <Modal.Footer className="glass-footer">
-      <Button 
-        variant="secondary" 
-        onClick={() => setShowLogin(false)}
-        className="glass-btn"
-        disabled={loading}
-      >
+      <Button variant="secondary" onClick={() => setShowLogin(false)} className="glass-btn" disabled={loading}>
         Chiudi
       </Button>
-      <Button 
-        variant="primary" 
-        type="submit"
-        className="glass-btn-primary"
-        disabled={loading}
-      >
-        {loading ? (
-          <Spinner animation="border" size="sm" />
-        ) : (
-          'Accedi'
-        )}
+      <Button variant="primary" type="submit" className="glass-btn-primary" disabled={loading}>
+        {loading ? <Spinner animation="border" size="sm" /> : 'Accedi'}
       </Button>
     </Modal.Footer>
   </Form>
 </Modal>
 
-         {/* Modale Registrazione */}
+
+
+{/* Modale Registrazione */}{/* Modale Registrazione */}{/* Modale Registrazione */}
          <Modal
   show={showSignup}
   onHide={() => {
@@ -597,7 +562,7 @@ const handleLogout = () => {
         <div className="auth-buttons">
           {authData.token ? (
             <>
-              <span className="text-light me-3">Ciao, {authData.user?.name}</span>
+              <span className="text-light me-3">Ciao, {authData.user}</span>
               <Button onClick={handleLogout} className="glass-btn">
                 Logout
               </Button>

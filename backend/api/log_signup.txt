@@ -1,0 +1,85 @@
+===
+RAW JSON:
+{
+    "email":  "mario@example.com",
+    "name":  "Mario",
+    "password":  "supersegreto"
+}
+DECODED:
+Array
+(
+    [email] => mario@example.com
+    [name] => Mario
+    [password] => supersegreto
+)
+===
+===
+RAW JSON:
+{
+    "email":  "mario@example.com",
+    "name":  "Mario",
+    "password":  "supersegreto"
+}
+DECODED:
+Array
+(
+    [email] => mario@example.com
+    [name] => Mario
+    [password] => supersegreto
+)
+
+===
+===
+RAW JSON:
+
+DECODED:
+
+===
+===
+RAW JSON:
+{"name":"mario","email":"mario@mario.it","password":"ciao"}
+DECODED:
+Array
+(
+    [name] => mario
+    [email] => mario@mario.it
+    [password] => ciao
+)
+
+===
+===
+RAW JSON:
+
+DECODED:
+
+===
+===
+RAW JSON:
+{"name":"giuseppe","email":"giuseppe@giuseppe.it","password":"ciao"}
+DECODED:
+Array
+(
+    [name] => giuseppe
+    [email] => giuseppe@giuseppe.it
+    [password] => ciao
+)
+
+===
+===
+RAW JSON:
+
+DECODED:
+
+===
+===
+RAW JSON:
+{"name":"gino","email":"strada@gino.it","password":"ciao"}
+DECODED:
+Array
+(
+    [name] => gino
+    [email] => strada@gino.it
+    [password] => ciao
+)
+
+===

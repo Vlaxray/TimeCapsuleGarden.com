@@ -1,5 +1,5 @@
 <?php
-$host = 'localhost';
+$host = '127.0.0.1';
 $dbname = 'my_avid4032050';  // Usa il nome ESATTO del database
 $user = 'root';           // Il tuo username Altervista
 $pass = 'ciaociao';         // La password che hai impostato
