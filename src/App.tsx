@@ -58,31 +58,31 @@ const App = () => {
 // Sezioni parallax
 const sections = [
   {
-    title: "🌿 Time Capsule Garden",
-    content: "Pianta il tuo seme digitale per il futuro",
+    title: "🌳 Inizia il tuo cammino",
+    content: "Benvenuto nel giardino del tempo, dove ogni storia conta...",
     bg: "linear-gradient(to bottom, #001f14, #003d1f)"
   },
   {
-    title: "🪴 Scegli il tuo seme",
-    content: "Cactus, Quercia, Rosa?",
+    title: "🧪 Scegli il tuo seme",
+    content: "Ogni seme ha potenzialità uniche: quale incanterà il futuro?",
     bg: "linear-gradient(to bottom, #003d1f, #005c2b)",
     component: <SeedCreator />
   },
   {
-    title: "💌 Crea tua seme-capsula del tempo",
-    content: "Aggiungi testo, emozioni e media alla tua seme-capsula",
+    title: "💌 Crea la tua capsula",
+    content: "Allega un messaggio, una foto o un video. Ogni seme custodisce emozioni da far sbocciare nel tempo...",
     bg: "linear-gradient(to bottom, #005c2b, #007a36)"
   },
   {
-    title: "🖼️ Genera NFT",
-    content: "Trasforma il tuo seme in un'opera d'arte digitale unica e mettilo nel tuo portafoglio NFT",
+    title: "🔗 Trasformalo in NFT",
+    content: "Il tuo seme prende forma come NFT unico, vivo e tuo...",
     bg: "linear-gradient(to bottom, #007a36, #009942)",
     component: <NFTGallery />
   },
   {
-    title: "🌍 Condividi o Vendi?",
-    content: "Le tue seme-capsule personali: decidi se tenerle per te, regalarle alle persone a te care o venderle sul MarketPlace",
-    bg: "linear-gradient(to bottom, #009942, #00b74f)",
+    title: "🎁 Conserva, o condividi",
+    content: "Custodisci il tuo NFT, condividilo con le persone a te care o rendilo accessibile nel Marketplace...",
+    bg: "linear-gradient(to bottom, #007f38, #00b654)",
     component: <Dashboard />
   }
 ];

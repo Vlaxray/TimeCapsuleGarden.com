@@ -83,3 +83,21 @@ Array
 )
 
 ===
+===
+RAW JSON:
+
+DECODED:
+
+===
+===
+RAW JSON:
+{"name":"gioegio","email":"gioggio@gioggio.it","password":"ciao"}
+DECODED:
+Array
+(
+    [name] => gioegio
+    [email] => gioggio@gioggio.it
+    [password] => ciao
+)
+
+===

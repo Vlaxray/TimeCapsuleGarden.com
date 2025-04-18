@@ -275,3 +275,25 @@ QUERY USER: Array
 
 PASSWORD_VERIFY: OK
 ===
+===
+2025-04-17T20:38:42+00:00 LOGIN DEBUG
+RAW JSON: {"email":"gioggio@gioggio.it","password":"ciao"}
+DECODED: Array
+(
+    [email] => gioggio@gioggio.it
+    [password] => ciao
+)
+
+QUERY USER: Array
+(
+    [id] => 5
+    [name] => gioegio
+    [email] => gioggio@gioggio.it
+    [password] => $2y$10$YFCiQZTWxZ2c4Vg0HdSamucBgQ044O4MkH7PV0l.1b0oNDGtqHKrW
+    [token] => 
+    [token_expires] => 
+    [created_at] => 2025-04-17 22:37:56
+)
+
+PASSWORD_VERIFY: OK
+===

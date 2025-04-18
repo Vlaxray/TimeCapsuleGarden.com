@@ -5,14 +5,14 @@ const SeedCreator = () => {
   return (
     <Form>
       <Form.Group className="mb-3">
-        <Form.Label>Scepi il tipo di seme</Form.Label>
-        <div className="d-flex gap-2">
-          {['Cactus', 'Quercia', 'Rosa', 'Margherita'].map(type => (
+        <Form.Label>descrizione ed espansione piu esplicativa</Form.Label>
+        {/*<div className="d-flex gap-2">
+          ['Cactus', 'Quercia', 'Rosa'].map(type => (
             <Button key={type} variant="outline-light">
               {type}
             </Button>
-          ))}
-        </div>
+          ))}  
+        </div> */}
       </Form.Group>
       {/* Altri campi del form */}
     </Form>
