@@ -17,6 +17,8 @@ import './styles/GlassModal.css'; // CSS per l'effetto vetro
 import * as THREE from 'three'; // Per la generazione della noise map
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Home from './pages/Home'
+import './styles/SeedPreview.css';
+import SeedPreview from './components/SeedPreview'
 
 
 
@@ -64,9 +66,9 @@ const sections = [
   },
   {
     title: "🧪 Scegli il tuo seme",
-    content: "Ogni seme ha potenzialità uniche: quale incanterà il futuro?",
-    bg: "linear-gradient(to bottom, #003d1f, #005c2b)",
-    component: <SeedCreator />
+    content: "Ogni seme racchiude un'emozione unica. Cosa vuoi piantare oggi? Coraggio, amore, gratitudine? La tua storia crescerà con lui...",
+    bg: "url('/src/images/background_flying_seed_section2.jpg') ",
+    component: <SeedPreview />
   },
   {
     title: "💌 Crea la tua capsula",
