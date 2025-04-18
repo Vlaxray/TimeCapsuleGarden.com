@@ -58,34 +58,41 @@ const App = () => {
 //}, []);
 
 // Sezioni parallax
-const sections = [
+type Section = {
+  title: string;
+  content: string;
+  bg: string;
+  component?: React.ReactNode;
+};
+
+const sections: Section[] = [
   {
     title: "🌳 Inizia il tuo cammino",
     content: "Benvenuto nel giardino del tempo, dove ogni storia conta...",
-    bg: "linear-gradient(to bottom, #001f14, #003d1f)"
+    bg: "url('/src/images/designer4.jpeg') "
   },
   {
-    title: "🧪 Scegli il tuo seme",
-    content: "Ogni seme racchiude un'emozione unica. Cosa vuoi piantare oggi? Coraggio, amore, gratitudine? La tua storia crescerà con lui...",
+    title: "🌱 Scegli il tuo seme",
+    content: "Ogni seme racchiude un'emozione unica. Cosa vuoi piantare oggi? Un progetto da realizzarsi, una dedica, un ricordo.. La tua storia crescerà con lui...",
     bg: "url('/src/images/background_flying_seed_section2.jpg') ",
-    component: <SeedPreview />
+    /*component: <SeedPreview />*/
   },
   {
-    title: "💌 Crea la tua capsula",
+    title: "💌 Crea la tua capsula del tempo",
     content: "Allega un messaggio, una foto o un video. Ogni seme custodisce emozioni da far sbocciare nel tempo...",
-    bg: "linear-gradient(to bottom, #005c2b, #007a36)"
+    bg: "url('/src/images/designer.jpeg') "
   },
   {
     title: "🔗 Trasformalo in NFT",
-    content: "Il tuo seme prende forma come NFT unico, vivo e tuo...",
-    bg: "linear-gradient(to bottom, #007a36, #009942)",
-    component: <NFTGallery />
+    content: "Decidi se convertire il tuo seme in un NFT unico, vivo e tuo...",
+    bg: "url('/src/images/designer2.jpeg')"
+    /*component: <NFTGallery />*/
   },
   {
     title: "🎁 Conserva, o condividi",
     content: "Custodisci il tuo NFT, condividilo con le persone a te care o rendilo accessibile nel Marketplace...",
-    bg: "linear-gradient(to bottom, #007f38, #00b654)",
-    component: <Dashboard />
+    bg: "url('/src/images/designer3.jpeg')",
+    /*component: <Dashboard />*/
   }
 ];
 
